@@ -1,151 +1,57 @@
+ Title: Implementation and Evaluation of a Neural Network for Predicting Bank Term Deposit Subscriptions
 
-Title: Implementation and Evaluation of a Neural Network for Predicting Bank Term Deposit Subscriptions
+ Abstract
 
-Abstract
-This paper describes the development and evaluation of a neural network model designed to predict customer subscription to a term deposit using a dataset from a bank marketing campaign. The model leverages fundamental neural network principles, including forward and backward propagation, activation functions, and parameter optimization. We analyze the performance of the model in terms of accuracy and discuss its potential applications.
+This paper presents the development and evaluation of a neural network model for predicting customer subscription to a term deposit using a bank marketing dataset. The model employs fundamental neural network principles, including forward and backward propagation, activation functions, and parameter optimization. The model's performance, evaluated in terms of accuracy, demonstrates its effectiveness in predicting client subscriptions.
 
-1. Introduction
-Predictive modeling plays a crucial role in various business applications, including marketing. This study utilizes a neural network to predict whether a client will subscribe to a term deposit based on demographic and campaign data. The model is built from scratch, providing insights into neural network training and performance evaluation.
+ 1. Introduction
 
-2. Dataset Preparation
-The dataset used in this study is sourced from the Bank Marketing dataset, which includes attributes related to customer demographics and marketing campaign interactions.
+Predictive modeling is vital in various business domains, including marketing. This study focuses on predicting whether a client will subscribe to a term deposit using a neural network. The dataset consists of customer demographics and campaign interactions. This paper details the dataset preparation, neural network architecture, training process, and performance evaluation.
 
-python
-Copy code
-import pandas as pd
-import numpy as np
+ 2. Dataset Preparation
 
-# Load dataset
-a = pd.read_csv("../input/bank-marketing/bank-full.csv")
-To streamline the dataset, several columns are dropped due to their irrelevance or redundancy:
+The dataset is obtained from a bank marketing campaign and includes various attributes related to customer demographics and marketing interactions. The data is initially loaded and prepared by dropping irrelevant or redundant columns. The target variable, which indicates whether a client subscribed to a term deposit, is binary-encoded (0 for 'no' and 1 for 'yes'). The features and target variable are then separated for model training.
 
-python
-Copy code
-train = a.drop(['job', 'marital', 'education', 'contact', 'month', 'poutcome', 'default', 'balance', 'housing', 'loan', 'contact', 'month', 'duration', 'pdays', 'previous', 'poutcome'], axis=1)
-The target variable y is binary-encoded for classification purposes:
+#### 3. Neural Network Architecture
 
-python
-Copy code
-train['y'].replace({'no': 0, 'yes': 1}, inplace=True)
-The dataset is then split into features (X) and the target variable (Y):
+The neural network model consists of the following layers:
+- **Input Layer**: Includes the features from the dataset.
+- **Hidden Layers**: Two hidden layers, each with 10 nodes.
+- **Output Layer**: A single node representing the binary classification outcome.
 
-python
-Copy code
-X = train.drop(['y'], axis=1)
-Y = train['y']
-3. Neural Network Architecture
-The neural network is structured with one input layer, two hidden layers, and one output layer:
+The model's parameters are initialized with small random values for weights and zeros for biases. This initialization is crucial for effective training.
 
-Input Layer: Features from the dataset
-Hidden Layers: 10 nodes each
-Output Layer: Single node for binary classification
-Network Parameters Initialization:
+#### 4. Forward Propagation
 
-python
-Copy code
-def define_network_parameters(n_x, n_h, n_y):
-    W1 = np.random.randn(n_h, n_x) * 0.01
-    b1 = np.zeros((n_h, 1))
-    W2 = np.random.randn(n_h, n_h) * 0.01
-    b2 = np.zeros((n_h, 1))
-    W3 = np.random.randn(n_y, n_h) * 0.01
-    b3 = np.zeros((n_y, 1))
-    return {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
-4. Forward Propagation
-Forward propagation involves calculating the activations for each layer using the sigmoid activation function:
+Forward propagation involves calculating the activations for each layer using the sigmoid activation function. The process involves computing linear combinations of the inputs and weights, followed by applying the sigmoid function to introduce non-linearity. This step generates predictions from the input data.
 
-python
-Copy code
-def sigmoid(z):
-    return 1.0 / (1 + np.exp(-z))
+#### 5. Error Computation
 
-def forward_propagation(X, params):
-    Z1 = np.dot(params['W1'], X) + params['b1']
-    A1 = sigmoid(Z1)
+The error, or loss, is computed using cross-entropy loss, which measures the difference between predicted probabilities and actual outcomes. The cross-entropy loss is averaged over all examples to quantify the model's prediction error.
 
-    Z2 = np.dot(params['W2'], A1) + params['b2']
-    A2 = sigmoid(Z2)
+#### 6. Backward Propagation
 
-    Z3 = np.dot(params['W3'], A2) + params['b3']
-    A3 = sigmoid(Z3)
-    return {"Z1": Z1, "A1": A1, "Z2": Z2, "A2": A2, "Z3": Z3, "A3": A3}
-5. Error Computation
-The error is computed using cross-entropy loss:
+Backward propagation calculates the gradients of the loss function with respect to the model parameters. This step involves computing the derivatives of the loss function for each weight and bias in the network. These gradients are used to update the parameters to minimize the loss.
 
-python
-Copy code
-def compute_error(Predicted, Actual):
-    logprobs = np.multiply(np.log(Predicted), Actual) + np.multiply(np.log(1 - Predicted), 1 - Actual)
-    cost = -np.sum(logprobs) / Actual.shape[1]
-    return np.squeeze(cost)
-6. Backward Propagation
-Backward propagation calculates the gradients of the loss function with respect to the model parameters:
+#### 7. Parameter Update
 
-python
-Copy code
-def backward_propagation(params, activations, X, Y):
-    m = X.shape[1]
+The model parameters are updated using gradient descent. The learning rate, or alpha, controls the step size for each parameter update. The updated parameters aim to reduce the loss and improve the model's performance.
 
-    dZ3 = activations['A3'] - Y
-    dW3 = np.dot(dZ3, activations['A2'].T) / m
-    db3 = np.sum(dZ3, axis=1, keepdims=True) / m
+#### 8. Training the Neural Network
 
-    dZ2 = np.dot(params['W3'].T, dZ3) * (1 - np.power(activations['A2'], 2))
-    dW2 = np.dot(dZ2, activations['A1'].T) / m
-    db2 = np.sum(dZ2, axis=1, keepdims=True) / m
+The neural network is trained over a specified number of iterations. During each iteration, forward propagation is performed to compute predictions, the error is calculated, backward propagation updates the parameters, and the parameters are refined. This iterative process continues until the model converges or reaches the specified number of iterations.
 
-    dZ1 = np.dot(params['W2'].T, dZ2) * (1 - np.power(activations['A1'], 2))
-    dW1 = np.dot(dZ1, X.T) / m
-    db1 = np.sum(dZ1, axis=1, keepdims=True) / m
+#### 9. Prediction and Accuracy
 
-    return {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2, "dW3": dW3, "db3": db3}
-7. Parameter Update
-The parameters are updated using gradient descent:
+After training, the model is used to make predictions on the dataset. The predictions are rounded to the nearest integer to obtain binary outcomes. The model's accuracy is calculated by comparing the predicted values to the actual outcomes, resulting in an accuracy of 88%.
 
-python
-Copy code
-def update_parameters(params, derivatives, alpha = 1.2):
-    params['W1'] = params['W1'] - alpha * derivatives['dW1']
-    params['b1'] = params['b1'] - alpha * derivatives['db1']
-    params['W2'] = params['W2'] - alpha * derivatives['dW2']
-    params['b2'] = params['b2'] - alpha * derivatives['db2']
-    params['W3'] = params['W3'] - alpha * derivatives['dW3']
-    params['b3'] = params['b3'] - alpha * derivatives['db3']
-    return params
-8. Training the Neural Network
-The neural network is trained over a specified number of iterations:
+#### 10. Conclusion
 
-python
-Copy code
-def neural_network(X, Y, n_h, num_iterations=100):
-    n_x = network_architecture(X, Y)[0]
-    n_y = network_architecture(X, Y)[2]
+The neural network model achieves an accuracy of 88% in predicting client subscriptions to term deposits. This result highlights the model's effectiveness in handling the given dataset. Future work could involve further hyperparameter tuning, exploring different network architectures, and validating the model on additional datasets to enhance its predictive performance.
 
-    params = define_network_parameters(n_x, n_h, n_y)
-    for i in range(num_iterations):
-        results = forward_propagation(X, params)
-        error = compute_error(results['A3'], Y)
-        derivatives = backward_propagation(params, results, X, Y)
-        params = update_parameters(params, derivatives)
-    return params
-9. Prediction and Accuracy
-The model's performance is evaluated using the accuracy metric:
+#### References
 
-python
-Copy code
-def predict(parameters, X):
-    results = forward_propagation(X, parameters)
-    predictions = np.around(results['A3'])
-    return predictions
+- Bank Marketing Dataset: UCI Machine Learning Repository
+- Ian Goodfellow, Yoshua Bengio, and Aaron Courville. "Deep Learning." MIT Press, 2016.
 
-predictions = predict(model, x)
-accuracy = float((np.dot(y, predictions.T) + np.dot(1 - y, 1 - predictions.T)) / float(y.size) * 100)
-print('Accuracy: %d' % accuracy + '%')
-Accuracy: 88%
-
-10. Conclusion
-The implemented neural network model achieves an accuracy of 88% on the Bank Marketing dataset, demonstrating its effectiveness in predicting client subscription to term deposits. Future work may include tuning hyperparameters, exploring alternative architectures, and validating the model on different datasets.
-
-References
-Bank Marketing Dataset
-Ian Goodfellow, Yoshua Bengio, and Aaron Courville. "Deep Learning." MIT Press, 2016.
+This paper provides a comprehensive overview of the neural network model implementation and its effectiveness in predictive analytics for marketing purposes.
