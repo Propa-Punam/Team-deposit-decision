@@ -1,5 +1,6 @@
 
 Title: Implementation and Evaluation of a Neural Network for Predicting Bank Term Deposit Subscriptions
+
 Abstract
 This paper describes the development and evaluation of a neural network model designed to predict customer subscription to a term deposit using a dataset from a bank marketing campaign. The model leverages fundamental neural network principles, including forward and backward propagation, activation functions, and parameter optimization. We analyze the performance of the model in terms of accuracy and discuss its potential applications.
 
